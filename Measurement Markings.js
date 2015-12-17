@@ -1,4 +1,8 @@
-
+/**
+ * Name: Measurement Markings
+ * Author: Timothy Wood @codearachnid
+ * dependencies: none
+ */
     var properties = [
       {id: "Machine Size", type: "list", value: "500", options: [["300", "500mm"], ["800", "1000mm"]]}
     ];
