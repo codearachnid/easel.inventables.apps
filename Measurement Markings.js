@@ -12,9 +12,19 @@ var properties = [{
         ["300", "500mm"],
         ["800", "1000mm"]
     ]
+},{
+  id: "Box Size",
+  type: "list",
+  value: "50",
+  options: [
+    ["50", "50mm"],
+    ["100", "100mm"],
+    ["150", "150mm"],
+    ["200", "200mm"],
+    ["300", "300mm"],
+    ["400", "400mm"]
+  ]
 }];
-
-var markerLength = 5;
 
 var executor = function(args, success, failure) {
     var params = args[0];
@@ -24,51 +34,60 @@ var executor = function(args, success, failure) {
     var left = 0;
     var bottom = 0;
     var cutDepth = "rgb(215,215,215)";
-    var blockSize = 50;
+    var boxSize = params["Box Size"];
+    var markerLength = 5;
+    var markerSpacing = {
+      "50": 5,
+      "100": 10,
+      "150": 20,
+      "200": 20,
+      "300": 20,
+      "400": 20,
+    };
 
     var svg = ['<?xml version="1.0" standalone="no"?>',
         '<svg xmlns="http://www.w3.org/2000/svg" version="1.0" width="' + width + dimension + '" height="' + height + dimension + '" viewBox="' + left + ' ' + bottom + ' ' + width + ' ' + height + '">',
-        '<path d="' + paths(width, height, blockSize) + '" style="stroke:' + cutDepth + '; fill:none;" />',
+        '<path d="' + paths(width, height, boxSize, markerLength, markerSpacing[boxSize]) + '" style="stroke:' + cutDepth + '; fill:none;" />',
         '</svg>'
     ].join("");
     success(svg);
 };
 
 
-function paths(width, height, size) {
+function paths(width, height, size, markerLength, markerSpacing) {
     var blocks = [];
-    for (var i = 0; i <= (height / markerLength); i++) {
+    for (var i = 0; i <= (height / markerSpacing); i++) {
         // horizontal dividers
-        if ((i * markerLength) % size === 0) {
-            blocks.push(line(0, i * markerLength, 'H', width));
+        if ((i * markerSpacing) % size === 0) {
+            blocks.push(line(0, i * markerSpacing, 'H', width));
         }
-        for (var ii = 0; ii <= (width / markerLength); ii++) {
-            if ((ii * markerLength) % size === 0) {
+        for (var ii = 0; ii <= (width / markerSpacing); ii++) {
+            if ((ii * markerSpacing) % size === 0) {
                 // vertical dividers
-                blocks.push(line(ii * markerLength, 0, 'V', height));
+                blocks.push(line(ii * markerSpacing, 0, 'V', height));
                 // vertical edgelines
-                if (i <= (height / markerLength) && (i === 0 || ii === 0) && (ii * markerLength) + (markerLength / 2) <= width) {
-                    blocks.push(line((ii * markerLength), i * markerLength, 'H', (ii * markerLength) + (markerLength / 2)));
-                } else if (ii == (width / markerLength) && ii > 0) {
-                    blocks.push(line((ii * markerLength), i * markerLength, 'H', (ii * markerLength) - (markerLength / 2)));
+                if (i <= (height / markerSpacing) && (i === 0 || ii === 0) && (ii * markerSpacing) + (markerSpacing / 2) <= width) {
+                    blocks.push(line((ii * markerSpacing), i * markerSpacing, 'H', (ii * markerSpacing) + (markerSpacing / 2)));
+                } else if (ii == (width / markerSpacing) && ii > 0) {
+                    blocks.push(line((ii * markerSpacing), i * markerSpacing, 'H', (ii * markerSpacing) - (markerSpacing / 2)));
                 } else {
-                    blocks.push(line((ii * markerLength) - (markerLength / 2), i * markerLength, 'H', (ii * markerLength) + (markerLength / 2)));
+                    blocks.push(line((ii * markerSpacing) - (markerSpacing / 2), i * markerSpacing, 'H', (ii * markerSpacing) + (markerSpacing / 2)));
                 }
             }
             // horizontal edgelines
-            if ((i * markerLength) % size === 0) {
-                if (ii <= (width / markerLength) && (i === 0 || ii === 0) && (i * markerLength) + (markerLength / 2) <= height) {
-                    blocks.push(line((ii * markerLength), i * markerLength, 'V', (i * markerLength) + (markerLength / 2)));
-                } else if (i == (height / markerLength)) {
-                    blocks.push(line((ii * markerLength), i * markerLength, 'V', (i * markerLength) - (markerLength / 2)));
+            if ((i * markerSpacing) % size === 0) {
+                if (ii <= (width / markerSpacing) && (i === 0 || ii === 0) && (i * markerSpacing) + (markerSpacing / 2) <= height) {
+                    blocks.push(line((ii * markerSpacing), i * markerSpacing, 'V', (i * markerSpacing) + (markerSpacing / 2)));
+                } else if (i == (height / markerSpacing)) {
+                    blocks.push(line((ii * markerSpacing), i * markerSpacing, 'V', (i * markerSpacing) - (markerSpacing / 2)));
                 } else {
-                    blocks.push(line((ii * markerLength), (i * markerLength) - (markerLength / 2), 'V', (i * markerLength) + (markerLength / 2)));
+                    blocks.push(line((ii * markerSpacing), (i * markerSpacing) - (markerSpacing / 2), 'V', (i * markerSpacing) + (markerSpacing / 2)));
                 }
             }
 
             if (i < (height / size) && ii < (width / size)) {
                 // crosshairs
-                blocks.push(crosshair((i * size) + (size / 2), (ii * size) + (size / 2)));
+                blocks.push(crosshair((i * size) + (size / 2), (ii * size) + (size / 2), markerLength));
             }
         }
     }
@@ -84,9 +103,9 @@ function line(x, y, direction, distance) {
     return moveTO(x, y) + direction.toUpperCase() + distance + " ";
 }
 
-function crosshair(x, y) {
+function crosshair(x, y, l) {
     return [
-        line(x, y + (markerLength / 2), 'V', y - (markerLength / 2)),
-        line(x + (markerLength / 2), y, 'H', x - (markerLength / 2))
+        line(x, y + (l / 2), 'V', y - (l / 2)),
+        line(x + (l / 2), y, 'H', x - (l / 2))
     ].join(' ');
 }
