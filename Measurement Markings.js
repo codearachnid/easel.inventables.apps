@@ -1,96 +1,92 @@
 /**
  * Name: Measurement Markings
+ * Description: Build a measurement pattern for your diy wasteboard project. Blocks are 50mm square with crosshairs.
  * Author: Timothy Wood @codearachnid
  * dependencies: none
  */
-    var properties = [
-      {id: "Machine Size", type: "list", value: "500", options: [["100", "500mm"], ["800", "1000mm"]]}
-      // {id: "Depth of Cut", type: "range",value: 100, min: 3, max: 500, step: 1
-    ];
+var properties = [{
+    id: "Machine Size",
+    type: "list",
+    value: "300",
+    options: [
+        ["300", "500mm"],
+        ["800", "1000mm"]
+    ]
+}];
 
-    var markerLength = 5;
+var markerLength = 5;
 
-    var executor = function(args, success, failure) {
-      var params = args[0];
-      var dimension = "mm";
-      var height = params["Machine Size"];
-      var width = params["Machine Size"];
-      var left = 0;
-      var bottom = 0;
-      var cutDepth = "rgb(215,215,215)";
-      var blockSize = 50;
-      
-      var svg = ['<?xml version="1.0" standalone="no"?>',
+var executor = function(args, success, failure) {
+    var params = args[0];
+    var dimension = "mm";
+    var height = params["Machine Size"];
+    var width = params["Machine Size"];
+    var left = 0;
+    var bottom = 0;
+    var cutDepth = "rgb(215,215,215)";
+    var blockSize = 50;
+
+    var svg = ['<?xml version="1.0" standalone="no"?>',
         '<svg xmlns="http://www.w3.org/2000/svg" version="1.0" width="' + width + dimension + '" height="' + height + dimension + '" viewBox="' + left + ' ' + bottom + ' ' + width + ' ' + height + '">',
-        '<path d="' + paths(width,height,blockSize) + '" style="stroke:' + cutDepth + '; fill:none;" />',
+        '<path d="' + paths(width, height, blockSize) + '" style="stroke:' + cutDepth + '; fill:none;" />',
         '</svg>'
-        ].join("");
+    ].join("");
+    success(svg);
+};
 
-      success(svg);
-    };
 
+function paths(width, height, size) {
+    var blocks = [];
+    for (var i = 0; i <= (height / markerLength); i++) {
+        // horizontal dividers
+        if ((i * markerLength) % size === 0) {
+            blocks.push(line(0, i * markerLength, 'H', width));
+        }
+        for (var ii = 0; ii <= (width / markerLength); ii++) {
+            if ((ii * markerLength) % size === 0) {
+                // vertical dividers
+                blocks.push(line(ii * markerLength, 0, 'V', height));
+                // vertical edgelines
+                if (i <= (height / markerLength) && (i === 0 || ii === 0) && (ii * markerLength) + (markerLength / 2) <= width) {
+                    blocks.push(line((ii * markerLength), i * markerLength, 'H', (ii * markerLength) + (markerLength / 2)));
+                } else if (ii == (width / markerLength) && ii > 0) {
+                    blocks.push(line((ii * markerLength), i * markerLength, 'H', (ii * markerLength) - (markerLength / 2)));
+                } else {
+                    blocks.push(line((ii * markerLength) - (markerLength / 2), i * markerLength, 'H', (ii * markerLength) + (markerLength / 2)));
+                }
+            }
+            // horizontal edgelines
+            if ((i * markerLength) % size === 0) {
+                if (ii <= (width / markerLength) && (i === 0 || ii === 0) && (i * markerLength) + (markerLength / 2) <= height) {
+                    blocks.push(line((ii * markerLength), i * markerLength, 'V', (i * markerLength) + (markerLength / 2)));
+                } else if (i == (height / markerLength)) {
+                    blocks.push(line((ii * markerLength), i * markerLength, 'V', (i * markerLength) - (markerLength / 2)));
+                } else {
+                    blocks.push(line((ii * markerLength), (i * markerLength) - (markerLength / 2), 'V', (i * markerLength) + (markerLength / 2)));
+                }
+            }
 
-function paths(width,height,size){
-  var blocks = [];
-  for(var i=0;i<(height/size);i++){
-    for(var ii=0;ii<(width/size);ii++){
-       blocks.push( markingBlock(ii*size,i*size,size) );
+            if (i < (height / size) && ii < (width / size)) {
+                // crosshairs
+                blocks.push(crosshair((i * size) + (size / 2), (ii * size) + (size / 2)));
+            }
+        }
     }
-  }
-  return blocks.join("");
-}
-
-function markingBlock(x,y,size){
-  
-  var block = [
-    // moveTO( x, y ),
-    // bounding box
-    rect( x, y, size, size ),
-    // edge lines
-    edgeLine( 'top', y, x+size, markerLength ),
-    edgeLine( 'left', x, y+size, markerLength ),
-    edgeLine( 'right', x+size, y+size, markerLength ),
-    edgeLine( 'bottom', y+size, x+size, markerLength ),
-    // crosshair
-    line( x+(size/2), y+(size/2)-markerLength, x+(size/2), y+(size/2)+markerLength ),
-    line( x+(size/2)-markerLength, y+(size/2), x+(size/2)+markerLength, y+(size/2) ),
-    ];
-  return block.join(' '); 
-}
-
-function edgeLine( side, start, distance, increment ){
-  var markers = [];
-  for(var i=0;i<(distance/increment);i++){
-    if( side == 'top' ){
-      markers.push( line( i*increment, start, i*increment, start + markerLength ) );
-    } else if ( side == 'bottom' ){
-      markers.push( line( i*increment, start, i*increment, start - markerLength ) );
-    } else if ( side == 'left' ){
-      markers.push( line( start, i*increment, start + markerLength, i*increment ) );
-    } else if ( side == 'right' ){
-      // console.log(start, i*increment, start - markerLength, i*increment);
-      markers.push( line( start, i*increment, start - markerLength, i*increment ) );
-    }
-  }
-  return markers.join("");
-}
-
-function moveTO(x,y){
-  return "M" + [x,y].join(',') + " ";
-}
-
-function line( x1, y1, x2, y2 ){
-  return moveTO(x1,y1) + "L" + [x2,y2].join(',') + ' ';
-}
-
-function rect( x, y, w, h ){
-  // top, bottom, left, right
-  return [
-    line( x, y, x+w, y ),
-    line( x, y+h, x+w, y+h ),
-    line( x, y, x, y+h ),
-    line( x+w, y, x+w, y+h )
-  ].join('');
+    return blocks.join("");
 }
 
 
+function moveTO(x, y) {
+    return "M" + [x, y].join(',') + " ";
+}
+
+function line(x, y, direction, distance) {
+    return moveTO(x, y) + direction.toUpperCase() + distance + " ";
+}
+
+function crosshair(x, y) {
+    return [
+        line(x, y + (markerLength / 2), 'V', y - (markerLength / 2)),
+        line(x + (markerLength / 2), y, 'H', x - (markerLength / 2))
+    ].join(' ');
+}
