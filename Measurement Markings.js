@@ -66,22 +66,22 @@ function paths(width, height, size, markerLength, markerSpacing) {
                 // vertical dividers
                 blocks.push(line(ii * markerSpacing, 0, 'V', height));
                 // vertical edgelines
-                if (i <= (height / markerSpacing) && (i === 0 || ii === 0) && (ii * markerSpacing) + (markerSpacing / 2) <= width) {
-                    blocks.push(line((ii * markerSpacing), i * markerSpacing, 'H', (ii * markerSpacing) + (markerSpacing / 2)));
+                if (i <= (height / markerSpacing) && (i === 0 || ii === 0) && (ii * markerSpacing) + (markerLength / 2) <= width) {
+                    blocks.push(line((ii * markerSpacing), i * markerSpacing, 'H', (ii * markerSpacing) + (markerLength / 2)));
                 } else if (ii == (width / markerSpacing) && ii > 0) {
-                    blocks.push(line((ii * markerSpacing), i * markerSpacing, 'H', (ii * markerSpacing) - (markerSpacing / 2)));
+                    blocks.push(line((ii * markerSpacing), i * markerSpacing, 'H', (ii * markerSpacing) - (markerLength / 2)));
                 } else {
-                    blocks.push(line((ii * markerSpacing) - (markerSpacing / 2), i * markerSpacing, 'H', (ii * markerSpacing) + (markerSpacing / 2)));
+                    blocks.push(line((ii * markerSpacing) - (markerLength / 2), i * markerSpacing, 'H', (ii * markerSpacing) + (markerLength / 2)));
                 }
             }
             // horizontal edgelines
             if ((i * markerSpacing) % size === 0) {
-                if (ii <= (width / markerSpacing) && (i === 0 || ii === 0) && (i * markerSpacing) + (markerSpacing / 2) <= height) {
-                    blocks.push(line((ii * markerSpacing), i * markerSpacing, 'V', (i * markerSpacing) + (markerSpacing / 2)));
+                if (ii <= (width / markerSpacing) && (i === 0 || ii === 0) && (i * markerSpacing) + (markerLength / 2) <= height) {
+                    blocks.push(line((ii * markerSpacing), i * markerSpacing, 'V', (i * markerSpacing) + (markerLength / 2)));
                 } else if (i == (height / markerSpacing)) {
-                    blocks.push(line((ii * markerSpacing), i * markerSpacing, 'V', (i * markerSpacing) - (markerSpacing / 2)));
+                    blocks.push(line((ii * markerSpacing), i * markerSpacing, 'V', (i * markerSpacing) - (markerLength / 2)));
                 } else {
-                    blocks.push(line((ii * markerSpacing), (i * markerSpacing) - (markerSpacing / 2), 'V', (i * markerSpacing) + (markerSpacing / 2)));
+                    blocks.push(line((ii * markerSpacing), (i * markerSpacing) - (markerLength / 2), 'V', (i * markerSpacing) + (markerLength / 2)));
                 }
             }
 
